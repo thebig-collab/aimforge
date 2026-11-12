@@ -1,0 +1,35 @@
+name: Build AimForge for Windows
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - "AimForge_Expanded_Windows_Source.b64"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract source archive
+        shell: pwsh
+        run: |
+          $encoded = Get-Content AimForge_Expanded_Windows_Source.b64 -Raw
+          [IO.File]::WriteAllBytes("source.zip", [Convert]::FromBase64String($encoded))
+          Expand-Archive -Path source.zip -DestinationPath source
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r source/AimForge/requirements.txt pyinstaller
+      - name: Build portable EXE
+        working-directory: source/AimForge
+        run: pyinstaller --noconfirm --clean AimForge.spec
+      - name: Upload portable app
+        uses: actions/upload-artifact@v4
+        with:
+          name: AimForge-Windows
+          path: source/AimForge/dist/AimForge.exe
+          if-no-files-found: error
