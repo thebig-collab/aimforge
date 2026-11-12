@@ -3,7 +3,7 @@ on:
   push:
     branches: [ main ]
     paths:
-      - "AimForge_Expanded_Windows_Source.b64"
+      - "AimForge_Expanded_Windows_Source.zip"
   workflow_dispatch:
 
 jobs:
@@ -13,10 +13,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Extract source archive
         shell: pwsh
-        run: |
-          $encoded = Get-Content AimForge_Expanded_Windows_Source.b64 -Raw
-          [IO.File]::WriteAllBytes("source.zip", [Convert]::FromBase64String($encoded))
-          Expand-Archive -Path source.zip -DestinationPath source
+        run: Expand-Archive -Path AimForge_Expanded_Windows_Source.zip -DestinationPath source
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
